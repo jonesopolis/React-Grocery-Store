@@ -11,8 +11,8 @@ const getLoginState = (req, loginOptions) => {
     async login(req, res) {
       try {
         await handleLogin(req, res, { getLoginState });
-      } catch (err) {
+      } catch (err) {        
         res.status(err.status ?? 500).end(err.message);
       }
-    }
+    },
   });

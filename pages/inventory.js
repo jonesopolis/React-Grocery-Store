@@ -3,9 +3,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InventoryItem from '../components/inventory-item';
 import { useState, useEffect } from 'react';
-import { getInventory } from '../src/inventory';
+import { getInventory } from '../src/inventory-repo';
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   
   const data = getInventory();
 
@@ -68,7 +68,7 @@ export default function Inventory({ inventory }) {
         <Form.Group className="col-2">
           <Form.Label>&nbsp;</Form.Label>
           <div>
-            <Button variant="outline-danger" onClick={clearFilters}>
+            <Button variant="outline-warning" onClick={clearFilters}>
               Clear Filters
             </Button>
           </div>

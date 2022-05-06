@@ -6,15 +6,19 @@ import Image from 'react-bootstrap/Image';
 import { useUser } from '@auth0/nextjs-auth0';
 import PubSub from 'pubsub-js';
 import { useEffect, useState } from 'react';
+import { userAuth } from '../src/user-auth';
 
 export default function MyNavbar() {
   const { user, isLoading } = useUser();
   const [cartCount, setCartCount] = useState(0);
+  const [canManageInventory, setCanManageInventory] = useState(0);
 
   useEffect(() => {
     if (!user) {
       return;
     }
+
+    setCanManageInventory(userAuth.userIsShopkeep(user));
 
     fetch("/api/cart")
       .then((res) => res.json())
@@ -32,7 +36,7 @@ export default function MyNavbar() {
   });
 
   return (
-    <Navbar bg="dark" variant="dark" fixed="top">
+    <Navbar bg="dark" variant="dark" fixed="top" expand="lg">
       <Container>
         <Navbar.Brand href="/">
           <Image
@@ -46,17 +50,25 @@ export default function MyNavbar() {
           David's Grocery
         </Navbar.Brand>
 
-        <Nav className="me-auto">
+        <Nav>
           <Nav.Link href="/inventory">Inventory</Nav.Link>
         </Nav>
+
+        {canManageInventory && (
+          <Nav>
+            <Nav.Link href="/manage-inventory">Manage Inventory</Nav.Link>
+          </Nav>
+        )}
+
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
 
         <Navbar.Collapse className="justify-content-end">
           {user && (
             <Navbar.Text>
               Welcome, <a href="/profile">{user.nickname}</a>!{" "}
-              <span className='mx-2'></span> 
-              <a className="btn btn-sm btn-outline-info" href='/cart'>
-              <Badge bg="info">{cartCount}</Badge> Items in Your Cart
+              <span className="mx-2"></span>
+              <a className="btn btn-sm btn-outline-info" href="/cart">
+                <Badge bg="info">{cartCount}</Badge> Items in Your Cart
               </a>
               <span className="mx-4">|</span>
               <a

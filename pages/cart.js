@@ -1,6 +1,6 @@
 import Table from 'react-bootstrap/Table';
 import { withPageAuthRequired, getSession } from '@auth0/nextjs-auth0';
-import { getInventory } from '../src/inventory';
+import { getInventory } from '../src/inventory-repo';
 import { cartRepo } from '../src/cart-repo';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -13,7 +13,8 @@ export const getServerSideProps = withPageAuthRequired({
   async getServerSideProps(ctx) {
     var inventory = getInventory();
 
-    let cart = await cartRepo.getUserCart(getSession(ctx.req, ctx.res).user.email);
+    let session = getSession(ctx.req, ctx.res);
+    let cart = await cartRepo.getUserCart(session.user.email);
 
     let cartItems = cart.map(({ itemId, count }) => {
       var item = inventory.find((x) => x.id === itemId);
@@ -32,12 +33,12 @@ export const getServerSideProps = withPageAuthRequired({
         cartItems: cartItems,
       },
     };
-  },
+  }
 });
 
 
 
-export default function Profile({ user, cartItems }) {
+export default function Profile({ cartItems }) {
 
   var intialCartCount = cartItems.map(x => x.count).reduce((partialSum, a) => partialSum + a, 0);
   var initialCartPrice = cartItems.map(x => x.count * x.price).reduce((partialSum, a) => partialSum + a, 0);

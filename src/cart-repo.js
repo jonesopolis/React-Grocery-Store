@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-let users = require('./users.json');
+let userCarts = require('./carts.json');
 
 export const cartRepo = {
     getUserCart: getUserCart,
@@ -11,7 +11,7 @@ export const cartRepo = {
 };
 
 function getUserCart(userId) {
-    let user = users.find(x => x.userId === userId);
+    let user = userCarts.find(x => x.userId === userId);
 
     if(!user) {
         user = create(userId);
@@ -26,7 +26,7 @@ function create(userId) {
         cart: []
     };
 
-    users.push(user);
+    userCarts.push(user);
     saveData();
 
     return user;
@@ -67,12 +67,12 @@ function deleteFromCart(userId, itemId) {
 }
 
 function clearUserCart(userId) {
-    let user = users.find(x => x.userId === userId);
+    let user = userCarts.find(x => x.userId === userId);
     user.cart = [];
 
     saveData();
 }
 
 function saveData() {
-    fs.writeFileSync('./src/users.json', JSON.stringify(users));
+    fs.writeFileSync('./src/carts.json', JSON.stringify(userCarts));
 }
