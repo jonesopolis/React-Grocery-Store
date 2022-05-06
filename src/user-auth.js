@@ -4,5 +4,5 @@ export const userAuth = {
 };
 
 function userIsShopkeep(user) {
-    return user && user['https://davidsgrocerystore.com/roles'].includes('Shopkeep')
+    return user && user['https://davidsgrocerystore.com/roles']?.includes('Shopkeep')
 }
