@@ -33,6 +33,16 @@ export const GroceryServiceProvider = (props) => {
       return request;
   });
 
+  axiosInstance.interceptors.response.use(response => response, 
+                                          async error => {
+                                            if (error.response.status === 401) {
+                                              await instance.handleRedirectPromise();
+                                              await instance.loginRedirect();
+                                            }
+
+                                            return Promise.reject(error)
+                                          });
+
 
 
   const cartServiceInstance = new cartService(axiosInstance);

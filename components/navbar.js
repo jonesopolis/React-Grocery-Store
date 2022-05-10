@@ -22,7 +22,7 @@ function MyNavbar() {
   const [canManageInventory, setCanManageInventory] = useState(0);
   const [disableLogoutButton, setDisableLogoutButton] = useState(false);
 
-  const { instance, accounts, auth } = useMsal();  
+  const { instance, accounts } = useMsal();  
   const account = useAccount(accounts[0]);
   const isAuthenticated = useIsAuthenticated();
 
