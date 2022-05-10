@@ -1,16 +1,25 @@
 import Table from 'react-bootstrap/Table';
-import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Image from 'next/image';
+import {
+  useMsal,
+  useAccount,
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
+} from "@azure/msal-react";
+import { useEffect } from 'react';
 
-export const getServerSideProps = withPageAuthRequired();
-
-export default function Profile({ user }) {
-
+export default function Profile() { 
+  
+  const { accounts } = useMsal();
+  let account = useAccount(accounts[0] || {});
+ 
   return (
-    <>
-      <h1 className="display-1">Hello, {user.nickname}!</h1>
+    <AuthenticatedTemplate>
+      <h1 className="display-1">
+        Hello, {account?.idTokenClaims?.family_name}!
+      </h1>
 
       <Row>
         <Col md="6">
@@ -22,30 +31,18 @@ export default function Profile({ user }) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Email</td>
-                <td>{user.email}</td>
-              </tr>
-              <tr>
-                <td>Name</td>
-                <td>{user.name}</td>
-              </tr>
-              <tr>
-                <td>Nickname</td>
-                <td>{user.nickname}</td>
-              </tr>
-              <tr>
-                <td>Picture</td>
-                <td><Image src={user.picture} height='50px' width='50px'></Image></td>
-              </tr>
-              <tr>
-                <td>Sub</td>
-                <td>{user.sub}</td>
-              </tr>
+              {account && account.idTokenClaims && Object.keys(account.idTokenClaims).map(
+                (key) => (
+                  <tr>
+                    <td>{key}</td>
+                    <td>{account.idTokenClaims[key]}</td>
+                  </tr>
+                )
+              )}
             </tbody>
           </Table>
         </Col>
       </Row>
-    </>
+    </AuthenticatedTemplate>
   );
 }

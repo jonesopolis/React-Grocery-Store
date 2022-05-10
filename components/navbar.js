@@ -1,39 +1,56 @@
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
+import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Image from 'react-bootstrap/Image';
-import { useUser } from '@auth0/nextjs-auth0';
 import PubSub from 'pubsub-js';
 import { useEffect, useState } from 'react';
 import { userAuth } from '../src/user-auth';
+import {
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
+  useIsAuthenticated,
+  useAccount,
+  useMsal,
+} from "@azure/msal-react";
+import { useGroceryServices } from '../components/grocery-service-context';
 
-export default function MyNavbar() {
-  const { user, isLoading } = useUser();
+
+function MyNavbar() {
   const [cartCount, setCartCount] = useState(0);
   const [canManageInventory, setCanManageInventory] = useState(0);
+  const [disableLogoutButton, setDisableLogoutButton] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
+  const { instance, accounts, auth } = useMsal();  
+  const account = useAccount(accounts[0]);
+  const isAuthenticated = useIsAuthenticated();
+
+  const { cartService } = useGroceryServices();
+
+  useEffect(async () => {
+    
+    if (!isAuthenticated) {
       return;
     }
 
-    setCanManageInventory(userAuth.userIsShopkeep(user));
+    setCanManageInventory(userAuth.userIsShopkeep(account));
 
-    fetch("/api/cart")
-      .then((res) => res.json())
-      .then((cart) => {
-        let count = cart
-          .map((x) => x.count)
-          .reduce((partialSum, a) => partialSum + a, 0);
-        setCartCount(count);
-      });
-  }, [isLoading]);
+    var cart = await cartService.getUserCart();
+    let count = cart.map((x) => x.count).reduce((partialSum, a) => partialSum + a, 0);
+    setCartCount(count);
+      
+  }, [isAuthenticated]);
   
 
   PubSub.subscribe("cart-count", (msg, count) => {
     setCartCount(count);
   });
+
+  function logout() {
+     instance.logoutRedirect();
+     setDisableLogoutButton(true);
+  }
 
   return (
     <Navbar bg="dark" variant="dark" fixed="top" expand="lg">
@@ -63,33 +80,36 @@ export default function MyNavbar() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
 
         <Navbar.Collapse className="justify-content-end">
-          {user && (
+          <AuthenticatedTemplate>
             <Navbar.Text>
-              Welcome, <a href="/profile">{user.nickname}</a>!{" "}
+              Welcome, <a href="/profile">{account?.username}</a>!{" "}
               <span className="mx-2"></span>
               <a className="btn btn-sm btn-outline-info" href="/cart">
                 <Badge bg="info">{cartCount}</Badge> Items in Your Cart
               </a>
               <span className="mx-4">|</span>
-              <a
-                className="btn btn-sm btn-outline-danger"
-                href="/api/auth/logout"
-                role="button"
+              <Button
+                variant='outline-danger'
+                size='sm'
+                onClick={logout}
+                disabled={disableLogoutButton}
               >
                 Logout
-              </a>
+              </Button>
             </Navbar.Text>
-          )}
+          </AuthenticatedTemplate>
 
           <Navbar.Text>
-            {!user && !isLoading && (
-              <a className="btn btn-outline-info" href="/api/auth/login">
+            <UnauthenticatedTemplate>
+              <Button variant='outline-info' onClick={() => instance.loginRedirect()}>
                 Login
-              </a>
-            )}
+              </Button>
+            </UnauthenticatedTemplate>
           </Navbar.Text>
         </Navbar.Collapse>
       </Container>
     </Navbar>
   );
 }
+
+export default MyNavbar;

@@ -1,76 +1,78 @@
 import Table from 'react-bootstrap/Table';
-import { withPageAuthRequired, getSession } from '@auth0/nextjs-auth0';
-import { getInventory } from '../src/inventory-repo';
-import { cartRepo } from '../src/cart-repo';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PubSub from 'pubsub-js';
 import NumberFormat from 'react-number-format';
 import { useRouter } from 'next/router';
+import { useGroceryServices } from '../components/grocery-service-context';
+import Spinner from 'react-bootstrap/Spinner';
 
-export const getServerSideProps = withPageAuthRequired({
-  async getServerSideProps(ctx) {
-    var inventory = getInventory();
+export default function Profile() {
+  let { inventoryService, cartService } = useGroceryServices();
 
-    let session = getSession(ctx.req, ctx.res);
-    let cart = await cartRepo.getUserCart(session.user.email);
+  const [loading, setLoading] = useState(true);
+  const [inventory, setInventory] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  
+  const router = useRouter();
+  const [cartCount, setCartCount] = useState(0);
+  const [cartPrice, setCartPrice] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
-    let cartItems = cart.map(({ itemId, count }) => {
-      var item = inventory.find((x) => x.id === itemId);
+  useEffect(async () => {
+    setInventory(await inventoryService.getInventory());
+  }, []);
+
+  useEffect(async () => {
+    if(!inventory.length) {
+      return;
+    }
+
+    let cart = await cartService.getUserCart();
+
+    let items = cart.map(({ itemId, count }) => {
+      var inventoryItem = inventory.find((x) => x.id === itemId);
 
       return {
         itemId: itemId,
-        title: item.title,
+        title: inventoryItem.title,
         count: count,
-        price: item.price
+        price: inventoryItem.price,
       };
     });
 
-    return {
-      props: {
-        inventory: inventory,
-        cartItems: cartItems,
-      },
-    };
-  }
-});
+    setCartItems(items);
+    setLoading(false);
+  }, [inventory]);
 
+  useEffect(() => {
+    setCartCount(cartItems.map(x => x.count).reduce((partialSum, a) => partialSum + a, 0));
+    setCartPrice(cartItems.map(x => x.count * x.price).reduce((partialSum, a) => partialSum + a, 0));  
 
+  }, [cartItems]);
 
-export default function Profile({ cartItems }) {
-
-  var intialCartCount = cartItems.map(x => x.count).reduce((partialSum, a) => partialSum + a, 0);
-  var initialCartPrice = cartItems.map(x => x.count * x.price).reduce((partialSum, a) => partialSum + a, 0);
-
-  const router = useRouter();
-  const [cartCount, setCartCount] = useState(intialCartCount);
-  const [cartPrice, setCartPrice] = useState(initialCartPrice);
-  const [showModal, setShowModal] = useState(false);
 
   async function removeFromCart(itemId) {
-    await fetch("/api/cart", {
-      method: "PUT",
-      body: itemId,
-    })
-      .then((res) => res.json())
-      .then((count) => {
-        setCartCount(count);
-        PubSub.publish('cart-count', count);
+    var totalCount = await cartService.removeFromCart(itemId);
 
-        cartItems = cartItems.filter(x => x.itemId !== itemId);
-        let newPrice = cartItems.map(x => x.count * x.price).reduce((partialSum, a) => partialSum + a, 0)
-        setCartPrice(newPrice);
-      });
+    setCartCount(totalCount);
+    PubSub.publish("cart-count", totalCount);
+    setCartItems(cartItems.filter((x) => x.itemId !== itemId));
   }
 
   async function checkout() {
-    await fetch("/api/cart", {
-      method: "DELETE",
-    }).then(() => {
-      PubSub.publish('cart-count', 0);
-      router.push("/");
-    });
+    await cartService.checkout();
+    PubSub.publish('cart-count', 0);
+    router.push("/");
+  }
+
+  if(loading) {
+    return (
+      <div className="d-flex justify-content-center">
+        <Spinner animation="grow" variant="info"/>
+      </div>
+    );
   }
 
   return (

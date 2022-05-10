@@ -3,21 +3,16 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InventoryItem from '../components/inventory-item';
 import { useState, useEffect } from 'react';
-import { getInventory } from '../src/inventory-repo';
+import { useGroceryServices } from '../components/grocery-service-context';
+import Spinner from 'react-bootstrap/Spinner';
 
-export async function getStaticProps() {
-  
-  const data = getInventory();
-
-  return {
-    props: { inventory: data }, 
-  }
-}
-
-export default function Inventory({ inventory }) {
-  const [filteredInventory, setFilteredInventory] = useState(inventory);
+export default function Inventory() {
+  const [inventory, setInventory] = useState([]);
+  const [filteredInventory, setFilteredInventory] = useState([]);
   const [filterText, setFilterText] = useState("");
   const [filterType, setFilterType] = useState("");
+
+  let { inventoryService } = useGroceryServices();
 
   useEffect(() => {
     let filtering = inventory;
@@ -32,6 +27,12 @@ export default function Inventory({ inventory }) {
 
     setFilteredInventory(filtering);
   }, [filterType, filterText]);
+
+  useEffect(async () => {
+    let data = await inventoryService.getInventory();
+    setInventory(data);
+    setFilteredInventory(data);
+  }, []);
 
   function clearFilters() {
     setFilterText("");
@@ -75,8 +76,14 @@ export default function Inventory({ inventory }) {
         </Form.Group>
       </Form>
 
-      <div className='gradient mt-1 mb-4'></div>
+      <div className="gradient mt-1 mb-4"></div>
 
+      {!inventory.length && (
+        <div className="d-flex justify-content-center">
+          <Spinner animation="grow" variant="info" />
+        </div>
+      )}
+      
       <Row>
         {filteredInventory.map(({ id, title, type, description, price }) => (
           <InventoryItem
