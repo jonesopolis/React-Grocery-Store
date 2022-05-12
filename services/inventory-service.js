@@ -5,7 +5,17 @@ export default function InventoryService(axiosInstance) {
         return response.data;
     }
 
-    return {
-        getInventory
+    async function addInventory(inventoryItem) {
+        await axiosInstance.post('/inventory', inventoryItem);        
     }
+
+    async function resetInventory() {
+        await axiosInstance.delete('/inventory');
+    }
+
+    return {
+      getInventory,
+      addInventory,
+      resetInventory
+    };
 }

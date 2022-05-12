@@ -19,7 +19,10 @@ export default function Profile() {
       if(!isAuthenticated) {
         instance.handleRedirectPromise().then(async () => await instance.loginRedirect());
       }
+
+      console.log(account);
     }, [isAuthenticated])
+
 
   return (
     <>

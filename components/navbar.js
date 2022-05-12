@@ -6,7 +6,7 @@ import Container from 'react-bootstrap/Container';
 import Image from 'react-bootstrap/Image';
 import PubSub from 'pubsub-js';
 import { useEffect, useState } from 'react';
-import { userAuth } from '../src/user-auth';
+import { userAuth } from '../services/user-auth-service';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
