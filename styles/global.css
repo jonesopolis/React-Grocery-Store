@@ -5,6 +5,10 @@
    clear: both;
 }
 
+.top-nav-fixer {
+    margin-top: 80px;
+}
+
 footer {
     height: 96px;
 }
