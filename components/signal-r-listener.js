@@ -37,7 +37,7 @@ export default function SignalRListener({ children }) {
 
     return (
       <>
-        <ToastContainer className="p-3 top-nav-fixer" position="top-center">
+        <ToastContainer className="p-3 top-nav-fixer" position="buttom-center">
           <Toast show={showToast} animation="true" delay={10000} autohide bg='info' onClose={() => setShowToast(false)}>
             <Toast.Header closeButton={true}>
               <strong className="me-auto">New Inventory Added!</strong>
