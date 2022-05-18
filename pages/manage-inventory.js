@@ -2,7 +2,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
 import NumberFormat from "react-number-format";
 import {  useState } from "react";
 import { useGroceryServices } from "../components/grocery-service-context";
@@ -12,44 +12,27 @@ export default function ManageInventory() {
     const { inventoryService } = useGroceryServices();
     const [inventoryItem, setInventoryItem] = useState({ title: "", type: "", description: "", price: 0.0 });
 
-    const [previousTitle, setPreviousTitle] = useState("");
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-    const [showInventoryResetAlert, setShowInventoryResetAlert] = useState(false);
+    const [showAddedSuccessfully, setShowAddedSuccessfully] = useState(false);
+    const [resettingInventory, setResettingInventory] = useState(false);
+    const [showResetInventorySuccessfully, setShowResetInventorySuccessfully] = useState(false);
 
     async function submit() {
         await inventoryService.addInventory(inventoryItem);
-        setPreviousTitle(inventoryItem.title);
+        setShowAddedSuccessfully(true);
+        setTimeout(() => setShowAddedSuccessfully(false), 2000)
         setInventoryItem({ title: "", type: "", description: "", price: 0.0 });
-        setShowSuccessAlert(true);
     }
 
     async function resetInventory() {
+      setResettingInventory(true);
       await inventoryService.resetInventory();
-      setShowInventoryResetAlert(true);
+      setResettingInventory(false);
+      setShowResetInventorySuccessfully(true);
+      setTimeout(() => setShowResetInventorySuccessfully(false), 2000)
     }
 
     return (
       <Row>
-        <Col md="12">
-          {showSuccessAlert && (
-            <Alert
-              variant="success"
-              onClose={() => setShowSuccessAlert(false)}
-              dismissible
-            >
-              <b>Success!</b> {previousTitle} added to database
-            </Alert>
-          )}
-          {showInventoryResetAlert && (
-            <Alert
-              variant="success"
-              onClose={() => setShowInventoryResetAlert(false)}
-              dismissible
-            >
-              <b>Success!</b> All inventory has been reset 
-            </Alert>
-          )}
-        </Col>
         <Col md="4">
           <h1 className="display-6">Add new inventory item</h1>
           <hr />
@@ -107,8 +90,11 @@ export default function ManageInventory() {
             </Form.Group>
 
             <Button variant="primary" onClick={submit}>
-              Submit
+              Add
             </Button>
+            {showAddedSuccessfully && (
+              <span className="mx-3 text-success">Added to Inventory!</span>
+            )}
           </Form>
         </Col>
 
@@ -124,8 +110,20 @@ export default function ManageInventory() {
           className="d-flex align-items-center justify-content-center"
         >
           <Button onClick={resetInventory} variant="info" size="lg">
+            {resettingInventory && (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                className="mx-2"
+              />
+            )}
             Reset Inventory
           </Button>
+          {showResetInventorySuccessfully && (
+            <span className="mx-3 text-success">Inventory Reset!</span>
+          )}
         </Col>
       </Row>
     );
