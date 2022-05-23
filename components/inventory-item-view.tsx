@@ -6,12 +6,13 @@ import NumberFormat from 'react-number-format';
 import PubSub from 'pubsub-js'
 import { AuthenticatedTemplate } from "@azure/msal-react";
 import { useGroceryServices } from './grocery-service-context';
+import InventoryItem from '../models/inventory-item';
 
-export default function InventoryItem({ id, title, type, description, price }) {
+const InventoryItemPage = ({ id, title, type, description, price }: InventoryItem) => {
 
   const { cartService } = useGroceryServices();
 
-  async function addToCart(id) {
+  async function addToCart(id: number) {
     var totalCount = await cartService.addToCart(id);
     PubSub.publish('cart-count', totalCount);
   }
@@ -53,3 +54,5 @@ export default function InventoryItem({ id, title, type, description, price }) {
     </Col>
   );
 }
+
+export default InventoryItemPage;

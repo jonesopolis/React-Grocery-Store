@@ -1,14 +1,15 @@
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import InventoryItem from '../components/inventory-item';
+import InventoryItemView from '../components/inventory-item-view';
 import { useState, useEffect } from 'react';
 import { useGroceryServices } from '../components/grocery-service-context';
 import Spinner from 'react-bootstrap/Spinner';
+import InventoryItem from '../models/inventory-item';
 
-export default function Inventory() {
-  const [inventory, setInventory] = useState([]);
-  const [filteredInventory, setFilteredInventory] = useState([]);
+const Inventory = () => {
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
   const [filterText, setFilterText] = useState("");
   const [filterType, setFilterType] = useState("");
 
@@ -28,10 +29,14 @@ export default function Inventory() {
     setFilteredInventory(filtering);
   }, [filterType, filterText]);
 
-  useEffect(async () => {
-    let data = await inventoryService.getInventory();
-    setInventory(data);
-    setFilteredInventory(data);
+  useEffect(() => {
+    const doWork = async () => {
+      let data = await inventoryService.getInventory();
+      setInventory(data);
+      setFilteredInventory(data);
+    }
+
+    doWork();
   }, []);
 
   function clearFilters() {
@@ -86,16 +91,18 @@ export default function Inventory() {
       
       <Row>
         {filteredInventory.map(({ id, title, type, description, price }) => (
-          <InventoryItem
+          <InventoryItemView
             id={id}
             title={title}
             type={type}
             description={description}
             price={price}
             key={id}
-          ></InventoryItem>
+          ></InventoryItemView>
         ))}
       </Row>
     </>
   );
 }
+
+export default Inventory;

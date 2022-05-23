@@ -1,4 +1,4 @@
-export default function Home() {
+const Home = () => {
   return (
     <>
       <div className="d-flex justify-content-center mt-5">
@@ -6,4 +6,6 @@ export default function Home() {
       </div>
     </>
   );
-}
+};
+
+export default Home;

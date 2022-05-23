@@ -3,10 +3,11 @@ import '../styles/global.css';
 import Layout from '../components/layout';
 import { MsalProvider } from '@azure/msal-react';
 import { msalInstance } from '../services/msal';
-import { GroceryServiceProvider } from '../components/grocery-service-context';
+import GroceryServiceProvider from '../components/grocery-service-context';
 import SignalRListener from '../components/signal-r-listener';
+import { AppProps } from 'next/app';
 
-export default function App({ Component, pageProps }) {
+const App = ({ Component, pageProps }: AppProps) => {
   
     return (
       <MsalProvider instance={msalInstance}>
@@ -20,3 +21,5 @@ export default function App({ Component, pageProps }) {
       </MsalProvider>
     );
   }
+
+  export default App;

@@ -6,11 +6,12 @@ import Spinner from "react-bootstrap/Spinner";
 import NumberFormat from "react-number-format";
 import {  useState } from "react";
 import { useGroceryServices } from "../components/grocery-service-context";
+import InventoryItem from "../models/inventory-item";
 
-export default function ManageInventory() {
+const ManageInventory = () => {
 
     const { inventoryService } = useGroceryServices();
-    const [inventoryItem, setInventoryItem] = useState({ title: "", type: "", description: "", price: 0.0 });
+    const [inventoryItem, setInventoryItem] = useState<InventoryItem>(new InventoryItem());
 
     const [showAddedSuccessfully, setShowAddedSuccessfully] = useState(false);
     const [resettingInventory, setResettingInventory] = useState(false);
@@ -20,7 +21,7 @@ export default function ManageInventory() {
         await inventoryService.addInventory(inventoryItem);
         setShowAddedSuccessfully(true);
         setTimeout(() => setShowAddedSuccessfully(false), 2000)
-        setInventoryItem({ title: "", type: "", description: "", price: 0.0 });
+        setInventoryItem(new InventoryItem());
     }
 
     async function resetInventory() {
@@ -80,7 +81,7 @@ export default function ManageInventory() {
                 className="form-control"
                 value={inventoryItem.price}
                 onValueChange={(e) =>
-                  setInventoryItem({ ...inventoryItem, price: e.value })
+                  setInventoryItem({ ...inventoryItem, price: +e.value })
                 }
                 thousandSeparator={true}
                 prefix={"$"}
@@ -128,3 +129,5 @@ export default function ManageInventory() {
       </Row>
     );
 }
+
+export default ManageInventory;

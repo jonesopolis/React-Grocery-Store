@@ -9,43 +9,51 @@ import { useGroceryServices } from '../components/grocery-service-context';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
+import InventoryItem from '../models/inventory-item';
+import { Cart } from '../models/user-cart';
+import CartItem from '../models/cart-item';
 
-export default function Profile() {
+const CartView = () => {
   let { inventoryService, cartService } = useGroceryServices();
 
   const [loading, setLoading] = useState(true);
-  const [inventory, setInventory] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
   const [cartPrice, setCartPrice] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(async () => {
-    setInventory(await inventoryService.getInventory());
+  useEffect(() => {
+    const doWork = async () => setInventory(await inventoryService.getInventory());
+    doWork();
   }, []);
 
-  useEffect(async () => {
-    if(!inventory.length) {
-      return;
+  useEffect(() => {
+    const doWork = async () => {
+      if(!inventory.length) {
+        return;
+      }
+
+      let cart = await cartService.getUserCart();
+
+      let items = cart.map(x => {
+        var inventoryItem = inventory.find((xx: InventoryItem) => xx.id === x.itemId) ?? new InventoryItem();
+
+        return new CartItem({
+          itemId: x.itemId,
+          title: inventoryItem?.title,
+          count: x.count,
+          price: inventoryItem?.price,
+        });
+      });
+
+      setCartItems(items);
+      setLoading(false);
     }
 
-    let cart = await cartService.getUserCart();
-
-    let items = cart.map(({ itemId, count }) => {
-      var inventoryItem = inventory.find((x) => x.id === itemId);
-
-      return {
-        itemId: itemId,
-        title: inventoryItem.title,
-        count: count,
-        price: inventoryItem.price,
-      };
-    });
-
-    setCartItems(items);
-    setLoading(false);
+    doWork();
   }, [inventory]);
 
   useEffect(() => {
@@ -55,7 +63,7 @@ export default function Profile() {
   }, [cartItems]);
 
 
-  async function removeFromCart(itemId) {
+  async function removeFromCart(itemId: number) {
     var totalCount = await cartService.removeFromCart(itemId);
 
     setCartCount(totalCount);
@@ -175,3 +183,5 @@ export default function Profile() {
     </>
   );
 }
+
+export default CartView;

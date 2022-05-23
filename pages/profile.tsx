@@ -9,19 +9,16 @@ import {
 } from "@azure/msal-react";
 
 
-export default function Profile() { 
-  
+const Profile = () => { 
   const { accounts, instance } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   let account = useAccount(accounts[0]);;
 
-    useEffect(() => {      
-      if(!isAuthenticated) {
-        instance.handleRedirectPromise().then(async () => await instance.loginRedirect());
-      }
-
-      console.log(account);
-    }, [isAuthenticated])
+  useEffect(() => {      
+    if(!isAuthenticated) {
+      instance.handleRedirectPromise().then(async () => await instance.loginRedirect());
+    }
+  }, [isAuthenticated])
 
 
   return (
@@ -47,7 +44,7 @@ export default function Profile() {
                     Object.keys(account.idTokenClaims).map((key) => (
                       <tr key={key}>
                         <td>{key}</td>
-                        <td>{account.idTokenClaims[key]}</td>
+                        <td>{account?.idTokenClaims?.[key] as string}</td>
                       </tr>
                     ))}
                 </tbody>
@@ -59,3 +56,5 @@ export default function Profile() {
     </>
   );
 }
+
+export default Profile;
