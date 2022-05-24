@@ -10,7 +10,6 @@ import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import InventoryItem from '../models/inventory-item';
-import { Cart } from '../models/user-cart';
 import CartItem from '../models/cart-item';
 
 const CartView = () => {

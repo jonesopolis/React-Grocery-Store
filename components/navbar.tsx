@@ -84,7 +84,7 @@ const MyNavbar = () => {
             <Navbar.Text>
               Welcome, <a href="/profile">{account?.username}</a>!{" "}
               <span className="mx-2"></span>
-              <a className="btn btn-sm btn-outline-info" href="/cart">
+              <a className="btn btn-sm btn-outline-info" href="/cart-view">
                 <Badge bg="info">{cartCount}</Badge> Items in Your Cart
               </a>
               <span className="mx-4">|</span>
