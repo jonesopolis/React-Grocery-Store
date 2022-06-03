@@ -3,8 +3,8 @@ import { useContext } from "react";
 import CartService from "../services/cart-service";
 import InventoryService from '../services/inventory-service';
 import axios from 'axios';
-import { useMsal, useAccount } from "@azure/msal-react";
 import IGroceryServices from '../services/grocery-services';
+import { useSession, signIn } from "next-auth/react";
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL
@@ -20,20 +20,18 @@ export const useGroceryServices = () => useContext(GroceryServiceContext);
 
 const GroceryServiceProvider = ({ children }: { children: React.ReactNode }) => {
   
-  const { instance, accounts } = useMsal();  
-  const account = useAccount(accounts[0]); 
+  const { data: session } = useSession();
 
   async function getToken() {
-    if(account) {
-      var response = await instance.acquireTokenSilent({ scopes: ["api://b4373faf-503c-4930-9661-cb93b74e3625/myapi"], account: account })
-      return response.accessToken;
+    if(session && session.account) {      
+      return session.account.access_token;
     }
 
-    return null;
+    signIn();
   }
 
   axiosInstance.interceptors.request.use(async request => {      
-      if(!request?.headers?.Authorization && account) {        
+      if(!request?.headers?.Authorization && session) {        
         request.headers!.Authorization = `Bearer ${await getToken()}`;
       }
 
@@ -43,8 +41,7 @@ const GroceryServiceProvider = ({ children }: { children: React.ReactNode }) => 
   axiosInstance.interceptors.response.use(response => response, 
                                           async error => {
                                             if (error.response.status === 401) {
-                                              await instance.handleRedirectPromise();
-                                              await instance.loginRedirect();
+                                              console.error('bad token');
                                             }
 
                                             return Promise.reject(error)

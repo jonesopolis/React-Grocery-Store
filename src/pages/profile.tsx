@@ -1,32 +1,17 @@
 import Table from 'react-bootstrap/Table';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import { useEffect } from 'react';
-import {
-  useMsal,
-  useAccount,
-  useIsAuthenticated
-} from "@azure/msal-react";
-
+import { useSession } from "next-auth/react";
 
 const Profile = () => { 
-  const { accounts, instance } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
-  let account = useAccount(accounts[0]);;
-
-  useEffect(() => {      
-    if(!isAuthenticated) {
-      instance.handleRedirectPromise().then(async () => await instance.loginRedirect());
-    }
-  }, [isAuthenticated])
-
+  const { data: session } = useSession({ required: true });
 
   return (
     <>
-      {isAuthenticated && (
+      {session && (
         <>
           <h1 className="display-1">
-            {`Welcome, ${account?.idTokenClaims?.family_name}!`}
+            {`Welcome, ${session?.user?.family_name}!`}
           </h1>
 
           <Row>
@@ -39,12 +24,12 @@ const Profile = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {account &&
-                    account.idTokenClaims &&
-                    Object.keys(account.idTokenClaims).map((key) => (
+                  {session &&
+                    session.user &&
+                    Object.entries(session.user).map(([key, value]) => (
                       <tr key={key}>
                         <td>{key}</td>
-                        <td>{account?.idTokenClaims?.[key] as string}</td>
+                        <td>{value}</td>
                       </tr>
                     ))}
                 </tbody>

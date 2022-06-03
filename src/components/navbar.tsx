@@ -7,33 +7,29 @@ import Container from 'react-bootstrap/Container';
 import Image from 'react-bootstrap/Image';
 import PubSub from 'pubsub-js';
 import UserAuthService from '../services/user-auth-service';
-import {
-  AuthenticatedTemplate,
-  UnauthenticatedTemplate,
-  useIsAuthenticated,
-  useAccount,
-  useMsal,
-} from "@azure/msal-react";
 import { useGroceryServices } from './grocery-service-context';
 import { Cart } from '../models/user-cart';
+import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { SeverityLevel } from '@microsoft/applicationinsights-common';
 
 const MyNavbar = () => {
   const [cartCount, setCartCount] = useState(0);
   const [canManageInventory, setCanManageInventory] = useState(false);
   const [disableLogoutButton, setDisableLogoutButton] = useState(false);
 
-  const { instance, accounts } = useMsal();
-  const account = useAccount(accounts[0]);
-  const isAuthenticated = useIsAuthenticated();
   const { cartService } = useGroceryServices();
 
+  const { data: session } = useSession();
+
   useEffect(() => {
+
     const checkAuth = async () => {
-      if (!isAuthenticated) {
+      if (!session) {
         return;
       }
-
-      setCanManageInventory(UserAuthService.userIsShopkeep(account));
+      
+      setCanManageInventory(UserAuthService.userIsShopkeep(session.user.roles));
 
       var cart = await cartService.getUserCart();
       let count = cart.map((x: Cart) => x.count).reduce((partialSum: number, a: number) => partialSum + a, 0);
@@ -41,15 +37,27 @@ const MyNavbar = () => {
     };
 
     checkAuth();
-  }, [isAuthenticated]);
+  }, [session]);
 
   PubSub.subscribe("cart-count", (_, count) => {
     setCartCount(count);
   });
 
   function logout() {
-     instance.logoutRedirect();
+     signOut();
      setDisableLogoutButton(true);
+  }
+
+  function throwAnError() {
+
+    var exception = new Error("oh no");
+
+    window.appInsights?.trackException({
+      error: exception,
+      exception: exception,
+      severityLevel: SeverityLevel.Error
+    });
+    
   }
 
   return (
@@ -71,6 +79,10 @@ const MyNavbar = () => {
           <Nav.Link href="/inventory">Inventory</Nav.Link>
         </Nav>
 
+        <Nav>
+          <Nav.Link href="#" onClick={throwAnError}>Throw!</Nav.Link>
+        </Nav>
+
         {canManageInventory && (
           <Nav>
             <Nav.Link href="/manage-inventory">Manage Inventory</Nav.Link>
@@ -80,34 +92,34 @@ const MyNavbar = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
 
         <Navbar.Collapse className="justify-content-end">
-          <AuthenticatedTemplate>
-            <Navbar.Text>
-              Welcome, <a href="/profile">{account?.username}</a>!{" "}
-              <span className="mx-2"></span>
-              <a className="btn btn-sm btn-outline-info" href="/cart-view">
-                <Badge bg="info">{cartCount}</Badge> Items in Your Cart
-              </a>
-              <span className="mx-4">|</span>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={logout}
-                disabled={disableLogoutButton}
-              >
-                Logout
-              </Button>
-            </Navbar.Text>
-          </AuthenticatedTemplate>
+          {session && ( 
+              <Navbar.Text>
+                Welcome, <a href="/profile">{session.user?.email}</a>!{" "}
+                <span className="mx-2"></span>
+                <a className="btn btn-sm btn-outline-info" href="/cart-view">
+                  <Badge bg="info">{cartCount}</Badge> Items in Your Cart
+                </a>
+                <span className="mx-4">|</span>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={logout}
+                  disabled={disableLogoutButton}
+                >
+                  Logout
+                </Button>
+              </Navbar.Text>
+          )}
 
           <Navbar.Text>
-            <UnauthenticatedTemplate>
+            {!session && ( 
               <Button
                 variant="outline-info"
-                onClick={() => instance.loginRedirect()}
+                onClick={() => signIn("azure-ad")}
               >
                 Login
               </Button>
-            </UnauthenticatedTemplate>
+            )}
           </Navbar.Text>
         </Navbar.Collapse>
       </Container>

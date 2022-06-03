@@ -8,9 +8,9 @@ import { useRouter } from 'next/router';
 import { useGroceryServices } from '../components/grocery-service-context';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import InventoryItem from '../models/inventory-item';
 import CartItem from '../models/cart-item';
+import { useSession } from "next-auth/react";
 
 const CartView = () => {
   let { inventoryService, cartService } = useGroceryServices();
@@ -23,7 +23,9 @@ const CartView = () => {
   const [cartCount, setCartCount] = useState(0);
   const [cartPrice, setCartPrice] = useState(0);
   const [showModal, setShowModal] = useState(false);
-
+  
+  const { data: session } = useSession({ required: true });
+  
   useEffect(() => {
     const doWork = async () => setInventory(await inventoryService.getInventory());
     doWork();
@@ -86,77 +88,73 @@ const CartView = () => {
 
   return (
     <>
-      <UnauthenticatedTemplate>
-        <Alert variant="warning">You are not logged in!</Alert>
-      </UnauthenticatedTemplate>
-
-      <AuthenticatedTemplate>
+      {session && (
+      <>
         {cartCount > 0 && (
           <>
-            <h2 className="display-4">
-              You have {cartCount} {cartCount === 1 ? "item" : "items"} in your
-              cart totalling{" "}
-              <NumberFormat
-                value={cartPrice}
-                displayType={"text"}
-                thousandSeparator={true}
-                prefix={"$"}
-                fixedDecimalScale={true}
-                decimalScale={2}
-              ></NumberFormat>
-            </h2>
+          <h2 className="display-4">
+            You have {cartCount} {cartCount === 1 ? "item" : "items"} in your
+            cart totalling{" "}
+            <NumberFormat
+              value={cartPrice}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"$"}
+              fixedDecimalScale={true}
+              decimalScale={2}
+            ></NumberFormat>
+          </h2>
 
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Price (Each)</th>
-                  <th>Count</th>
-                  <th></th>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Price (Each)</th>
+                <th>Count</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {cartItems.map(({ itemId, title, count, price }) => (
+                <tr key={itemId}>
+                  <td className="w-25">{title}</td>
+                  <td className="w-25">
+                    <NumberFormat
+                      value={price}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"$"}
+                      fixedDecimalScale={true}
+                      decimalScale={2}
+                    ></NumberFormat>
+                  </td>
+                  <td className="w-25">{count}</td>
+                  <td className="text-center">
+                    <Button
+                      variant="outline-danger btn btn-sm"
+                      onClick={() => removeFromCart(itemId)}
+                    >
+                      Remove from Cart
+                    </Button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {cartItems.map(({ itemId, title, count, price }) => (
-                  <tr key={itemId}>
-                    <td className="w-25">{title}</td>
-                    <td className="w-25">
-                      <NumberFormat
-                        value={price}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        fixedDecimalScale={true}
-                        decimalScale={2}
-                      ></NumberFormat>
-                    </td>
-                    <td className="w-25">{count}</td>
-                    <td className="text-center">
-                      <Button
-                        variant="outline-danger btn btn-sm"
-                        onClick={() => removeFromCart(itemId)}
-                      >
-                        Remove from Cart
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+              ))}
+            </tbody>
+          </Table>
 
-            <div className="d-flex justify-content-center">
-              <div className=" w-50 d-grid mt-4">
-                <Button variant="info" onClick={() => setShowModal(true)}>
-                  I'm ready to check out!
-                </Button>
-              </div>
+          <div className="d-flex justify-content-center">
+            <div className=" w-50 d-grid mt-4">
+              <Button variant="info" onClick={() => setShowModal(true)}>
+                I'm ready to check out!
+              </Button>
             </div>
+          </div>
           </>
         )}
 
         {cartCount == 0 && (
           <>
             <h2 className="display-4">Your cart is empty!</h2>
-
             <div className="d-flex justify-content-center">
               <div className=" w-50 d-grid mt-4">
                 <a className="btn btn-info" href="/inventory">
@@ -178,7 +176,9 @@ const CartView = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-      </AuthenticatedTemplate>
+        
+      </>
+      )}
     </>
   );
 }

@@ -4,13 +4,14 @@ import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import NumberFormat from 'react-number-format';
 import PubSub from 'pubsub-js'
-import { AuthenticatedTemplate } from "@azure/msal-react";
 import { useGroceryServices } from './grocery-service-context';
 import InventoryItem from '../models/inventory-item';
+import { useSession } from "next-auth/react";
 
 const InventoryItemPage = ({ id, title, type, description, price }: InventoryItem) => {
 
   const { cartService } = useGroceryServices();
+  const { data: session } = useSession();
 
   async function addToCart(id: number) {
     var totalCount = await cartService.addToCart(id);
@@ -38,7 +39,7 @@ const InventoryItemPage = ({ id, title, type, description, price }: InventoryIte
           <Card.Subtitle className="mb-2 text-muted"></Card.Subtitle>
           <Card.Text>{description}</Card.Text>
 
-          <AuthenticatedTemplate>
+          {session && (
             <div className="d-flex mt-auto">
               <Button
                 variant="outline-secondary"
@@ -48,7 +49,7 @@ const InventoryItemPage = ({ id, title, type, description, price }: InventoryIte
                 Add to Cart
               </Button>
             </div>
-          </AuthenticatedTemplate>
+          )}
         </Card.Body>
       </Card>
     </Col>
