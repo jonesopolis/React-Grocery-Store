@@ -90,7 +90,6 @@ export const AppInsightsErrorBoundaryWithSession = ({ children }: { children: Re
   useEffect(() => {
     if (session && window.appInsights) {
       try {
-        console.log('WE ARE AUTH')
         window.appInsights.setAuthenticatedUserContext(session?.user?.email, session?.user?.sub, true);
       } catch {
         // Do Nothing.

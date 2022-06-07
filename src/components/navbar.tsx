@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
@@ -11,7 +11,6 @@ import { useGroceryServices } from './grocery-service-context';
 import { Cart } from '../models/user-cart';
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { SeverityLevel } from '@microsoft/applicationinsights-common';
 
 const MyNavbar = () => {
   const [cartCount, setCartCount] = useState(0);
@@ -48,18 +47,6 @@ const MyNavbar = () => {
      setDisableLogoutButton(true);
   }
 
-  function throwAnError() {
-
-    var exception = new Error("oh no");
-
-    window.appInsights?.trackException({
-      error: exception,
-      exception: exception,
-      severityLevel: SeverityLevel.Error
-    });
-    
-  }
-
   return (
     <Navbar bg="dark" variant="dark" fixed="top" expand="lg">
       <Container>
@@ -77,10 +64,6 @@ const MyNavbar = () => {
 
         <Nav>
           <Nav.Link href="/inventory">Inventory</Nav.Link>
-        </Nav>
-
-        <Nav>
-          <Nav.Link href="#" onClick={throwAnError}>Throw!</Nav.Link>
         </Nav>
 
         {canManageInventory && (

@@ -7,10 +7,10 @@ import NumberFormat from 'react-number-format';
 import { useRouter } from 'next/router';
 import { useGroceryServices } from '../components/grocery-service-context';
 import Spinner from 'react-bootstrap/Spinner';
-import Alert from 'react-bootstrap/Alert';
 import InventoryItem from '../models/inventory-item';
 import CartItem from '../models/cart-item';
 import { useSession } from "next-auth/react";
+import { SeverityLevel } from '@microsoft/applicationinsights-common';
 
 const CartView = () => {
   let { inventoryService, cartService } = useGroceryServices();
@@ -74,6 +74,11 @@ const CartView = () => {
 
   async function checkout() {
     await cartService.checkout();
+
+    if(window.appInsights) {
+      window.appInsights.trackEvent({name: "User Checked Out"});
+    }
+    
     PubSub.publish('cart-count', 0);
     router.push("/");
   }

@@ -1,9 +1,8 @@
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import renderer from 'react-test-renderer';
 import Profile from "../../pages/profile";
 import "@testing-library/jest-dom";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 jest.mock("next-auth/react")
 
@@ -11,14 +10,14 @@ it(`doesn't fail`, () => {
   const mockSession: Session = {
     expires: "1",
     user: {
-      aud: "oogabooga",
+      aud: "",
       iss: "",
       iat: 0,
       nbf: 0,
       exp: 0,
       aio: "",
       email: "",
-      family_name: "",
+      family_name: "davy jones",
       given_name: "",
       idp: "",
       name: "",
@@ -49,6 +48,6 @@ it(`doesn't fail`, () => {
 
   render(<Profile />);
 
-  expect(screen.getByText("oogabooga")).toBeInTheDocument();
+  expect(screen.getByText("davy jones")).toBeInTheDocument();
 })
 

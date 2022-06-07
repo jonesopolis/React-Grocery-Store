@@ -16,6 +16,10 @@ const InventoryItemPage = ({ id, title, type, description, price }: InventoryIte
   async function addToCart(id: number) {
     var totalCount = await cartService.addToCart(id);
     PubSub.publish('cart-count', totalCount);
+
+    if(window.appInsights) {
+      window.appInsights.trackEvent({name: "User Added Item to Cart"});
+    }
   }
 
   return (
