@@ -1,6 +1,6 @@
 class UserAuthService {
     public static userIsShopkeep(roles: string[]) : boolean {
-        return roles.includes('Shopkeep');
+        return roles && roles.includes('Shopkeep');
     }
 }
 

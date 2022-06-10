@@ -13,12 +13,12 @@ class CartService {
     return response.data;
   }
 
-  public async addToCart(itemId: number) {
+  public async addToCart(itemId: number): Promise<number> {
     var response = await this.axiosInstance.post('/cart', { itemId });
     return response.data;
   }
 
-  public async removeFromCart(itemId: number) {
+  public async removeFromCart(itemId: number): Promise<number> {
     var response = await this.axiosInstance.put('/cart', { itemId });
     return response.data;
   }
