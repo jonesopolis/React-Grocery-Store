@@ -3,7 +3,6 @@ import { AppProps } from 'next/app';
 import { ApplicationInsights, IConfiguration, IConfig, ITelemetryItem } from '@microsoft/applicationinsights-web';
 import { SeverityLevel } from '@microsoft/applicationinsights-common';
 import { useSession } from 'next-auth/react';
-import { Session } from 'next-auth';
 
 const IS_BROWSER = typeof window !== 'undefined';
 

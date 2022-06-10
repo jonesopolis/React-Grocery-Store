@@ -6,6 +6,7 @@ import SignalRListener from '../components/signal-r-listener';
 import { AppProps } from 'next/app';
 import { SessionProvider, useSession } from "next-auth/react"
 import { AppInsightsErrorBoundaryWithSession, initializeAppInsights, trackPageView } from '../components/app-insights';
+import { DistributedTracingModes } from '@microsoft/applicationinsights-common';
 
 const App = ({ Component, pageProps, router }: AppProps) => {
 
@@ -19,7 +20,7 @@ const App = ({ Component, pageProps, router }: AppProps) => {
     enableAjaxPerfTracking: true,
     isBrowserLinkTrackingEnabled: true,
     connectionString: process.env.NEXT_PUBLIC_APP_INSIGHTS_CONNECTION_STRING,
-    appId: "ReactApp"
+    distributedTracingMode: DistributedTracingModes.W3C
   });
 
   trackPageView({Component, pageProps, router });

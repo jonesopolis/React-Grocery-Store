@@ -27,7 +27,9 @@ const CartView = () => {
   const { data: session } = useSession({ required: true });
   
   useEffect(() => {
-    const doWork = async () => setInventory(await inventoryService.getInventory());
+    const doWork = async () => {
+      setInventory(await inventoryService.getInventory());
+    }
     doWork();
   }, []);
 

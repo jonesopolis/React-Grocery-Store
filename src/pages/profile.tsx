@@ -11,7 +11,7 @@ const Profile = () => {
       {session && (
         <>
           <h1 className="display-1">
-            {`Welcome, ${session?.user?.family_name}!`}
+            {`Welcome, ${session?.user?.email}!`}
           </h1>
 
           <Row>

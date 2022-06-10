@@ -8,7 +8,7 @@ class InventoryService {
         this.axiosInstance = axiosInstance; 
     }
 
-    public async getInventory() {
+    public async getInventory(): Promise<InventoryItem[]> {
         var response = await this.axiosInstance.get('/inventory');
         return response.data;
     }

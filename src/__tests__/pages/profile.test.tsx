@@ -4,9 +4,10 @@ import Profile from "../../pages/profile";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
-jest.mock("next-auth/react")
+jest.mock("next-auth/react");
 
-it(`doesn't fail`, () => {
+it(`displays claims values`, () => {
+
   const mockSession: Session = {
     expires: "1",
     user: {
